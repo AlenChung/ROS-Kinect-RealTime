@@ -25,6 +25,12 @@ import cv2
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
+from azure.storage.blob import BlockBlobService
+from azure.storage.blob import ContentSettings
+import os , glob 
+
+block_blob_service =BlockBlobService(account_name = 'skl2',
+                                                               account_key = 'pGh5+nqJgMdoJhP07pi1tQP/Wnyu2gXlz6Vkjqz/yapOJ9/cvGzVvH9rMN40eQqmK92UnR7dhkIVDuZtr8+zxQ==  '                                         )
 
 class TakePhoto:
     def __init__(self):
@@ -58,22 +64,39 @@ class TakePhoto:
         else:
             return False
 
-if __name__ == '__main__':
+while  True:
+                    if __name__ == '__main__':
 
-    # Initialize
-    rospy.init_node('take_photo', anonymous=False)
-    camera = TakePhoto()
 
-    # Take a photo
+                        # Initialize
+                        rospy.init_node('take_photo', anonymous=False)
+                        camera = TakePhoto()
 
-    # Use '_image_title' parameter from command line
-    # Default value is 'photo.jpg'
-    img_title = rospy.get_param('~image_title', 'photo.jpg')
+                        # Take a photo
 
-    if camera.take_picture(img_title):
-        rospy.loginfo("Saved image " + img_title)
-    else:
-        rospy.loginfo("No images received")
+                        # Use '_image_title' parameter from command line
+                        # Default value is 'photo.jpg'
+                        img_title = rospy.get_param('~image_title', 'photo.jpg')
 
-    # Sleep to give the last log messages time to be sent
-    rospy.sleep(1)
+                        if camera.take_picture(img_title):
+                            rospy.loginfo("Saved image " + img_title)
+                        else:
+                            rospy.loginfo("No images received")
+
+                        # Sleep to give the last log messages time to be sent
+                        rospy.sleep(3)
+
+                        for im_name in glob.glob("/home/allenchung/Desktop/turtlebot/*.jpg"):
+                            print(im_name)
+                            block_blob_service.create_blob_from_path(
+                                 'temp-images',
+                                 os.path.basename(os.path.normpath(im_name)),
+                                 im_name,
+                                 content_settings=ContentSettings(content_type='image/jpg')
+                             )
+                                
+
+
+
+
+                            
